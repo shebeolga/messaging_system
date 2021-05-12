@@ -8,7 +8,7 @@ import os
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-engine = create_engine("sqlite:///messenger.db")
+engine = create_engine("sqlite:///home/shebeolga/messaging_system/messenger.db")
 db_session = sessionmaker(engine)
 db = db_session()
 
