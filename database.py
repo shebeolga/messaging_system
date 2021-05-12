@@ -12,7 +12,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
 
-engine = create_engine("sqlite:///messenger.db")
+engine = create_engine("sqlite:///home/shebeolga/messaging_system/messenger.db")
 Base = declarative_base()
 
 
