@@ -220,22 +220,22 @@ def read_message(message_id):
 
     message_to_read = db.query(Message).filter_by(message_id=message_id).first()
     
-    if not message_to_read:
-        return jsonify({'message': 'There is no such message'})
+    if message_to_read:
+        message_to_read.read = True
+        db.commit()
 
-    message_to_read.read = True
-    db.commit()
+        message = db.query(Message).filter_by(message_id=message_id).first()
 
-    message = db.query(Message).filter_by(message_id=message_id).first()
+        return jsonify({'message': {'message_id': message.message_id,
+                                    'sender': message.sender,
+                                    'receiver': message.receiver,
+                                    'message': message.message,
+                                    'subject': message.subject,
+                                    'create_date': message.create_date,
+                                    'read': message.read
+                                    }})
 
-    return jsonify({'message': {'message_id': message.message_id,
-                                'sender': message.sender,
-                                'receiver': message.receiver,
-                                'message': message.message,
-                                'subject': message.subject,
-                                'create_date': message.create_date,
-                                'read': message.read
-                                }})
+    return jsonify({'message': 'There is no such message'})
 
 
 @app.route('/message/<message_id>', methods=['DELETE'])
@@ -247,13 +247,13 @@ def delete_message(message_id):
     
     message_to_delete = db.query(Message).filter_by(message_id=message_id).first()
 
-    if not message_to_delete:
-        return jsonify({'message': 'There is no such message'})
+    if message_to_delete:
+        db.query(Message).filter_by(message_id=message_id).delete()
+        db.commit()
 
-    db.query(Message).filter_by(message_id=message_id).delete()
-    db.commit()
+        return jsonify({'message': 'the message is deleted'})
 
-    return jsonify({'message': 'the message is deleted'})
+    return jsonify({'message': 'There is no such message'})
 
 
 if __name__ == 'main':
