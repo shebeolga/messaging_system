@@ -221,19 +221,22 @@ def read_message(message_id):
     message_to_read = db.query(Message).filter_by(message_id=message_id).first()
     
     if message_to_read:
-        message_to_read.read = True
-        db.commit()
+        if message_to_read.read:
+            return jsonify({'message': 'You\'ve already read this message'})
+        else:
+            message_to_read.read = True
+            db.commit()
 
-        message = db.query(Message).filter_by(message_id=message_id).first()
+            message = db.query(Message).filter_by(message_id=message_id).first()
 
-        return jsonify({'message': {'message_id': message.message_id,
-                                    'sender': message.sender,
-                                    'receiver': message.receiver,
-                                    'message': message.message,
-                                    'subject': message.subject,
-                                    'create_date': message.create_date,
-                                    'read': message.read
-                                    }})
+            return jsonify({'message': {'message_id': message.message_id,
+                                        'sender': message.sender,
+                                        'receiver': message.receiver,
+                                        'message': message.message,
+                                        'subject': message.subject,
+                                        'create_date': message.create_date,
+                                        'read': message.read
+                                        }})
 
     return jsonify({'message': 'There is no such message'})
 
