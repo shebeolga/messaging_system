@@ -219,6 +219,9 @@ def read_message(message_id):
         return jsonify({"message": "You have to login or register"})
 
     message_to_read = db.query(Message).filter_by(message_id=message_id).first()
+    
+    if not message_to_read:
+        return jsonify({'message': 'There is no such message'})
 
     message_to_read.read = True
     db.commit()
@@ -241,6 +244,11 @@ def delete_message(message_id):
 
     if not user:
         return jsonify({"message": "You have to login or register"})
+    
+    message_to_delete = db.query(Message).filter_by(message_id=message_id).first()
+
+    if not message_to_delete:
+        return jsonify({'message': 'There is no such message'})
 
     db.query(Message).filter_by(message_id=message_id).delete()
     db.commit()
