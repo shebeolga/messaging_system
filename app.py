@@ -8,7 +8,7 @@ import os
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-engine = create_engine("sqlite:///home/shebeolga/messaging_system/messenger.db")
+engine = create_engine("sqlite:///messenger.db")
 db_session = sessionmaker(engine)
 db = db_session()
 
@@ -45,7 +45,7 @@ def register():
     existing_user = db.query(User).filter_by(email=email).first()
 
     if existing_user:
-        return jsonify({'message': "User with this email already exists!"})
+        return jsonify({'message': "User with this email already exists"})
 
     new_user = User(name=name, email=email, password=hashed_password)
     db.add(new_user)
@@ -106,8 +106,12 @@ def write_message():
     message = new_message_data['message']
     subject = new_message_data['subject']
 
-    if receiver == user.user_id:
+    if str(receiver) == user.user_id:
         return jsonify({'message': 'You cannot write letters to yourself'})
+
+    existing_receiver = db.query(User).filter_by(user_id=receiver).first()
+    if not existing_receiver:
+        return jsonify({'message': 'There is no such receiver in the system'})
 
     if len(message) == 0:
         return jsonify(({'message': 'You have to write something in your message'}))
@@ -140,7 +144,7 @@ def get_all_messages():
         .filter(or_(Message.sender == user.user_id, Message.receiver == user.user_id)).all()
 
     if len(all_messages) == 0:
-        return jsonify({'message': 'You don\'t have messages yet.'})
+        return jsonify({'message': 'You don\'t have messages yet'})
 
     return_messages = []
 
@@ -216,13 +220,13 @@ def read_message(message_id):
     user = get_current_user()
 
     if not user:
-        return jsonify({"message": "You have to login or register"})
+        return jsonify({'message': 'You have to login or register'})
 
     message_to_read = db.query(Message).filter_by(message_id=message_id).first()
-    
+
     if message_to_read:
         if message_to_read.read:
-            return jsonify({'message': 'You\'ve already read this message'})
+            return jsonify({'message': 'You already read this message'})
         else:
             message_to_read.read = True
             db.commit()
@@ -247,16 +251,16 @@ def delete_message(message_id):
 
     if not user:
         return jsonify({"message": "You have to login or register"})
-    
+
     message_to_delete = db.query(Message).filter_by(message_id=message_id).first()
 
-    if message_to_delete:
-        db.query(Message).filter_by(message_id=message_id).delete()
-        db.commit()
+    if not message_to_delete:
+        return jsonify({'message': 'There is no such message'})
 
-        return jsonify({'message': 'the message is deleted'})
+    db.query(Message).filter_by(message_id=message_id).delete()
+    db.commit()
 
-    return jsonify({'message': 'There is no such message'})
+    return jsonify({'message': 'The message is deleted'})
 
 
 if __name__ == 'main':
